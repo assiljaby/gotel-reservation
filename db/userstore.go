@@ -5,6 +5,7 @@ import (
 
 	"github.com/assiljaby/gotel-reservation/types"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -28,7 +29,12 @@ func NewMongoUserStore(client *mongo.Client) *MongoUserStore {
 
 func (s *MongoUserStore) GetUserById(ctx context.Context, id string) (*types.User, error) {
 	var user types.User
-	err := s.coll.FindOne(ctx, bson.M{"_id": ParseObjectID(id)}) .Decode(&user)
+	oid, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, err
+	}
+
+	err = s.coll.FindOne(ctx, bson.M{"_id": oid}).Decode(&user)
 	if err != nil {
 		return nil, err
 	}
