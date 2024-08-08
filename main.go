@@ -26,7 +26,6 @@ func main() {
 	}
 
 	mongodbURI := os.Getenv("MONGODB_URI")
-	// mongodbAtlasURI := os.Getenv("MONGODB_ATLAS_URI")
 	if mongodbURI == "" {
 		log.Fatal("Database URI was not set correctly.")
 	}
@@ -36,7 +35,6 @@ func main() {
 		log.Fatal("Failed to connect to database.")
 	}
 
-	// ctx := context.Background()
 	coll := client.Database(dbName).Collection(userCollection)
 
 	scrubloard := types.User{
@@ -57,13 +55,9 @@ func main() {
 	app := fiber.New()
 	apiv1 := app.Group("/api/v1")
 
-	app.Get("/foo", handleFoo)
+	app.Get("/foo", api.HandleFoo)
 	apiv1.Get("/users", api.HandleGetUsers)
 	apiv1.Get("/users/:id", api.HandleGetUser)
 
 	app.Listen(*listenPort)
-}
-
-func handleFoo(c *fiber.Ctx) error {
-	return c.JSON(map[string]string{"msg": "Bar!"})
 }
