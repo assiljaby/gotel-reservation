@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/assiljaby/gotel-reservation/db"
-	"github.com/assiljaby/gotel-reservation/types"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -31,10 +30,12 @@ func (h *UserHandler) HandleGetUser(c *fiber.Ctx) error {
 }
 
 func (h *UserHandler) HandleGetUsers(c *fiber.Ctx) error {
-	scrubLoard := types.User{
-		FirstName: "Scrub",
-		LastName: "Lord",
+	ctx := context.Background()
+
+	users, err := h.userStore.GetUsers(ctx)
+	if err != nil {
+		return err
 	}
 
-	return c.JSON(scrubLoard)
+	return c.JSON(users)
 }
