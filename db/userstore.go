@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/assiljaby/gotel-reservation/types"
 	"go.mongodb.org/mongo-driver/bson"
@@ -15,6 +16,8 @@ type UserStore interface {
 	GetUserById(context.Context, string) (*types.User, error)
 	GetUsers(context.Context) ([]*types.User, error)
 	CreateUser(context.Context, *types.User) (*types.User, error)
+	DeleteUser(context.Context, string) error
+	// UpdateUser(context.Context, string) (*types.User, error)
 }
 
 type MongoUserStore struct {
@@ -64,4 +67,20 @@ func (s *MongoUserStore) CreateUser(ctx context.Context, user *types.User) (*typ
 
 	user.ID = res.InsertedID.(primitive.ObjectID)
 	return user, nil
+}
+
+func (s *MongoUserStore) DeleteUser(ctx context.Context, id string) error {
+	oid, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return err
+	}
+
+	res, err := s.coll.DeleteOne(ctx, bson.M{"_id": oid})
+	if err != nil {
+		return err
+	}
+	if res.DeletedCount == 0 {
+		return fmt.Errorf("no users were deleted by this operation")
+	}
+	return nil
 }

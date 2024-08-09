@@ -1,9 +1,12 @@
 package api
 
 import (
+	"errors"
+
 	"github.com/assiljaby/gotel-reservation/db"
 	"github.com/assiljaby/gotel-reservation/types"
 	"github.com/gofiber/fiber/v2"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type UserHandler struct {
@@ -40,6 +43,11 @@ func (h *UserHandler) HandlePostUser(c *fiber.Ctx) error {
 		return err
 	}
 
+	errors := params.Validate()
+	if len(errors) > 0 {
+		return c.JSON(errors)
+	}
+
 	user, err := types.NewUserFromParams(params)
 	if err != nil {
 		return err
@@ -51,4 +59,20 @@ func (h *UserHandler) HandlePostUser(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(res)
+}
+
+func (h *UserHandler) HandleUpdateUser(c *fiber.Ctx) error {
+	return nil
+}
+
+func (h *UserHandler) HandleDeleteUser(c *fiber.Ctx) error {
+	id := c.Params("id")
+	err := h.userStore.DeleteUser(c.Context(), id)
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			c.JSON(map[string]string{"error": "user does not exist"})
+		}
+		return err
+	}
+	return c.JSON(map[string]string{"msg": "User Deleted Successfully"})
 }
