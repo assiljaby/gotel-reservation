@@ -15,9 +15,9 @@ const userColl = "users"
 type UserStore interface {
 	GetUserById(context.Context, string) (*types.User, error)
 	GetUsers(context.Context) ([]*types.User, error)
-	CreateUser(context.Context, *types.User) (*types.User, error)
+	CreateUser(context.Context, *types.UserWithoutID) (*types.User, error)
 	DeleteUser(context.Context, string) error
-	// UpdateUser(context.Context, string) (*types.User, error)
+	UpdateUser(context.Context, string, types.UserWithoutID) error
 }
 
 type MongoUserStore struct {
@@ -59,15 +59,38 @@ func (s *MongoUserStore) GetUsers(ctx context.Context) ([]*types.User, error) {
 	return users, nil
 }
 
-func (s *MongoUserStore) CreateUser(ctx context.Context, user *types.User) (*types.User, error) {
+func (s *MongoUserStore) CreateUser(ctx context.Context, user *types.UserWithoutID) (*types.User, error) {
 	res, err := s.coll.InsertOne(ctx, user)
 	if err != nil {
 		return nil, err
 	}
 
-	user.ID = res.InsertedID.(primitive.ObjectID)
-	return user, nil
+	createdUser := types.User{
+		UserWithoutID: types.UserWithoutID{
+			FirstName: user.FirstName,
+			LastName: user.LastName,
+			Email: user.Email,
+			PasswordHash: user.PasswordHash,
+		},
+	}
+
+	createdUser.ID = res.InsertedID.(primitive.ObjectID)
+	return &createdUser, nil
 }
+
+func (s *MongoUserStore) UpdateUser(ctx context.Context, id string, user types.UserWithoutID) error {
+	oid, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return err
+	}
+	_, err = s.coll.UpdateOne(ctx, bson.M{"_id": oid}, bson.M{"$set": user})
+	if err != nil {
+		return err
+	}
+	
+	return nil
+}
+
 
 func (s *MongoUserStore) DeleteUser(ctx context.Context, id string) error {
 	oid, err := primitive.ObjectIDFromHex(id)

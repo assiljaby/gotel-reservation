@@ -44,23 +44,28 @@ func isEmailValid(e string) bool {
 	return emailRegex.MatchString(e)
 } 
 
-type User struct {
-	ID 		  	 primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
+type UserWithoutID struct {
 	FirstName 	 string `bson:"firstName" json:"firstName"`
 	LastName  	 string `bson:"lastName" json:"lastName"`
 	Email  	  	 string `bson:"email" json:"email"`
 	PasswordHash string `bson:"passwordHash" json:"passwordHash"`
 }
 
-func NewUserFromParams(userPrms UserParams) (*User, error) {
+type User struct {
+	ID 		  	 primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
+	UserWithoutID
+}
+
+func NewUserFromParams(userPrms UserParams) (*UserWithoutID, error) {
 	passHash, err := bcrypt.GenerateFromPassword([]byte(userPrms.Password), bcryptCost)
 	if err != nil {
 		return nil, err
 	}
-	return &User{
+	return &UserWithoutID{
 		FirstName: userPrms.FirstName,
 		LastName: userPrms.LastName,
 		Email: userPrms.Email,
 		PasswordHash: string(passHash),
 	}, nil
 }
+
