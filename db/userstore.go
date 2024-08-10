@@ -66,12 +66,10 @@ func (s *MongoUserStore) CreateUser(ctx context.Context, user *types.UserWithout
 	}
 
 	createdUser := types.User{
-		UserWithoutID: types.UserWithoutID{
-			FirstName: user.FirstName,
-			LastName: user.LastName,
-			Email: user.Email,
-			PasswordHash: user.PasswordHash,
-		},
+		FirstName: user.FirstName,
+		LastName: user.LastName,
+		Email: user.Email,
+		PasswordHash: user.PasswordHash,
 	}
 
 	createdUser.ID = res.InsertedID.(primitive.ObjectID)

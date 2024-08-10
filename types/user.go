@@ -53,7 +53,10 @@ type UserWithoutID struct {
 
 type User struct {
 	ID 		  	 primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
-	UserWithoutID
+	FirstName 	 string `bson:"firstName" json:"firstName"`
+	LastName  	 string `bson:"lastName" json:"lastName"`
+	Email  	  	 string `bson:"email" json:"email"`
+	PasswordHash string `bson:"passwordHash" json:"passwordHash"`
 }
 
 func NewUserFromParams(userPrms UserParams) (*UserWithoutID, error) {
