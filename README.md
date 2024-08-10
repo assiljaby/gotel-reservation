@@ -6,6 +6,7 @@
 ## TODO
 
 - [x] Init
+- [x] Set Makefile
 - [x] Initialize DB
 - [x] Set Users CRUD
 - [x] Set User Validation
