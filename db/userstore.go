@@ -10,7 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-const userColl = "users"
+type Map map[string]any
 
 type UserStore interface {
 	GetUserById(context.Context, string) (*types.User, error)
@@ -22,13 +22,13 @@ type UserStore interface {
 
 type MongoUserStore struct {
 	client *mongo.Client
-	coll *mongo.Collection
+	coll   *mongo.Collection
 }
 
-func NewMongoUserStore(client *mongo.Client) *MongoUserStore {
+func NewMongoUserStore(client *mongo.Client, dbName string) *MongoUserStore {
 	return &MongoUserStore{
 		client: client,
-		coll: client.Database(DBNAME).Collection(userColl),
+		coll:   client.Database(dbName).Collection("users"),
 	}
 }
 
@@ -66,9 +66,9 @@ func (s *MongoUserStore) CreateUser(ctx context.Context, user *types.UserWithout
 	}
 
 	createdUser := types.User{
-		FirstName: user.FirstName,
-		LastName: user.LastName,
-		Email: user.Email,
+		FirstName:    user.FirstName,
+		LastName:     user.LastName,
+		Email:        user.Email,
 		PasswordHash: user.PasswordHash,
 	}
 
@@ -85,10 +85,9 @@ func (s *MongoUserStore) UpdateUser(ctx context.Context, id string, user types.U
 	if err != nil {
 		return err
 	}
-	
+
 	return nil
 }
-
 
 func (s *MongoUserStore) DeleteUser(ctx context.Context, id string) error {
 	oid, err := primitive.ObjectIDFromHex(id)

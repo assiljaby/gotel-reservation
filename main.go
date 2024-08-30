@@ -37,6 +37,11 @@ func main() {
 		log.Fatal("Database URI was not set correctly.")
 	}
 
+	DBNAME := os.Getenv("MONGO_DB_NAME")
+	if mongodbURI == "" {
+		log.Fatal("Database URI was not set correctly.")
+	}
+
 	// Initializing DB connection
 	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(mongodbURI))
 	if err != nil {
@@ -44,7 +49,7 @@ func main() {
 	}
 
 	// Handler Initialization
-	userHandler := api.NewUserHandler(db.NewMongoUserStore(client))
+	userHandler := api.NewUserHandler(db.NewMongoUserStore(client, DBNAME))
 
 	app := fiber.New(config)
 	apiv1 := app.Group("/api/v1")
