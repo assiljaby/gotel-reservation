@@ -62,8 +62,8 @@ func (h *UserHandler) HandlePostUser(c *fiber.Ctx) error {
 }
 
 func (h *UserHandler) HandleUpdateUser(c *fiber.Ctx) error {
-	var (	
-		id = c.Params("id")
+	var (
+		id       = c.Params("id")
 		userPrms types.UserParams
 	)
 	if err := c.BodyParser(&userPrms); err != nil {
@@ -75,17 +75,15 @@ func (h *UserHandler) HandleUpdateUser(c *fiber.Ctx) error {
 		return c.JSON(errors)
 	}
 
-
 	updatedUser, err := types.NewUserFromParams(userPrms)
 	if err != nil {
 		return err
 	}
 
-
 	if err = h.userStore.UpdateUser(c.Context(), id, *updatedUser); err != nil {
-		return err 
+		return err
 	}
-	
+
 	return c.JSON(map[string]string{"msg": "user updated"})
 }
 

@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/assiljaby/gotel-reservation/api"
+	"github.com/assiljaby/gotel-reservation/api/middleware"
 	"github.com/assiljaby/gotel-reservation/db"
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
@@ -58,9 +59,14 @@ func main() {
 		}
 		userHandler  = api.NewUserHandler(userStore)
 		hotelHandler = api.NewHotelHandler(store)
+		AuthHandler  = api.NewAuthHandler(store)
 		app          = fiber.New(config)
-		apiv1        = app.Group("/api/v1")
+		auth         = app.Group("/api")
+		apiv1        = app.Group("/api/v1", middleware.JWTAuth)
 	)
+
+	// Auth Handlers
+	auth.Post("/auth", AuthHandler.HandleAuthenticate)
 
 	// User Handlers
 	apiv1.Get("/users", userHandler.HandleGetUsers)
