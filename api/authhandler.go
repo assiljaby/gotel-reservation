@@ -66,7 +66,7 @@ func (h *AuthHandler) HandleAuthenticate(c *fiber.Ctx) error {
 }
 
 func CreateTokenFromUser(user *types.User) string {
-	validUntill := time.Now().Add(time.Hour * 4)
+	validUntill := time.Now().Add(time.Hour * 4).Unix()
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"id":          user.ID,
 		"email":       user.Email,

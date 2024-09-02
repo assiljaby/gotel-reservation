@@ -67,11 +67,11 @@ func main() {
 
 	// Auth Handlers
 	auth.Post("/auth", AuthHandler.HandleAuthenticate)
+	auth.Post("/users", userHandler.HandlePostUser)
 
 	// User Handlers
 	apiv1.Get("/users", userHandler.HandleGetUsers)
 	apiv1.Get("/users/:id", userHandler.HandleGetUser)
-	apiv1.Post("/users", userHandler.HandlePostUser)
 	apiv1.Put("/users/:id", userHandler.HandleUpdateUser)
 	apiv1.Delete("/users/:id", userHandler.HandleDeleteUser)
 
