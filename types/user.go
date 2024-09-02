@@ -9,16 +9,16 @@ import (
 )
 
 const (
-	bcryptCost = 12
+	bcryptCost      = 12
 	minFirstNameLen = 3
-	minLastNameLen = 3
-	minPasswordLen = 8
+	minLastNameLen  = 3
+	minPasswordLen  = 8
 )
 
 type UserParams struct {
 	FirstName string `json:"firstName"`
 	LastName  string `json:"lastName"`
-	Email  	  string `json:"email"`
+	Email     string `json:"email"`
 	Password  string `json:"password"`
 }
 
@@ -28,13 +28,13 @@ func (u UserParams) Validate() map[string]string {
 		errors["firstName"] = fmt.Sprintf("expected first name to be at least %d characters long, got %d instead", minFirstNameLen, fl)
 	}
 	if ll := len(u.LastName); ll < minLastNameLen {
-		errors["lastName"] =  fmt.Sprintf("expected last name to be at least %d characters long, got %d instead", minLastNameLen, ll)
+		errors["lastName"] = fmt.Sprintf("expected last name to be at least %d characters long, got %d instead", minLastNameLen, ll)
 	}
 	if pl := len(u.Password); pl < minPasswordLen {
-		errors["password"] =  fmt.Sprintf("expected password to be at least %d characters long, got %d instead", minPasswordLen, pl)
+		errors["password"] = fmt.Sprintf("expected password to be at least %d characters long, got %d instead", minPasswordLen, pl)
 	}
 	if !isEmailValid(u.Email) {
-		errors["email"] =  fmt.Sprintf("invalid email: %s", u.Email)
+		errors["email"] = fmt.Sprintf("invalid email: %s", u.Email)
 	}
 	return errors
 }
@@ -42,21 +42,25 @@ func (u UserParams) Validate() map[string]string {
 func isEmailValid(e string) bool {
 	emailRegex := regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
 	return emailRegex.MatchString(e)
-} 
+}
+
+func IsPasswordValid(passwordHash, password string) bool {
+	return bcrypt.CompareHashAndPassword([]byte(passwordHash), []byte(password)) == nil
+}
 
 type UserWithoutID struct {
-	FirstName 	 string `bson:"firstName" json:"firstName"`
-	LastName  	 string `bson:"lastName" json:"lastName"`
-	Email  	  	 string `bson:"email" json:"email"`
+	FirstName    string `bson:"firstName" json:"firstName"`
+	LastName     string `bson:"lastName" json:"lastName"`
+	Email        string `bson:"email" json:"email"`
 	PasswordHash string `bson:"passwordHash" json:"passwordHash"`
 }
 
 type User struct {
-	ID 		  	 primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
-	FirstName 	 string `bson:"firstName" json:"firstName"`
-	LastName  	 string `bson:"lastName" json:"lastName"`
-	Email  	  	 string `bson:"email" json:"email"`
-	PasswordHash string `bson:"passwordHash" json:"passwordHash"`
+	ID           primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
+	FirstName    string             `bson:"firstName" json:"firstName"`
+	LastName     string             `bson:"lastName" json:"lastName"`
+	Email        string             `bson:"email" json:"email"`
+	PasswordHash string             `bson:"passwordHash" json:"passwordHash"`
 }
 
 func NewUserFromParams(userPrms UserParams) (*UserWithoutID, error) {
@@ -65,10 +69,9 @@ func NewUserFromParams(userPrms UserParams) (*UserWithoutID, error) {
 		return nil, err
 	}
 	return &UserWithoutID{
-		FirstName: userPrms.FirstName,
-		LastName: userPrms.LastName,
-		Email: userPrms.Email,
+		FirstName:    userPrms.FirstName,
+		LastName:     userPrms.LastName,
+		Email:        userPrms.Email,
 		PasswordHash: string(passHash),
 	}, nil
 }
-
