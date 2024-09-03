@@ -4,13 +4,14 @@ import (
 	"context"
 
 	"github.com/assiljaby/gotel-reservation/types"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type BookingStore interface {
 	CreateBooking(context.Context, *types.Booking) (*types.Booking, error)
-	// GetBookings(context.Context, bson.M) ([]*types.Booking, error)
+	GetBookings(context.Context, bson.M) ([]*types.Booking, error)
 	// GetBookingByID(context.Context, string) (*types.Booking, error)
 	// UpdateBooking(context.Context, string, bson.M) error
 }
@@ -25,6 +26,18 @@ func NewMongoBookingStore(client *mongo.Client, DBNAME string) *MongoBookingStor
 		client: client,
 		coll:   client.Database(DBNAME).Collection("bookings"),
 	}
+}
+
+func (s *MongoBookingStore) GetBookings(ctx context.Context, filter bson.M) ([]*types.Booking, error) {
+	cursor, err := s.coll.Find(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+	var bookings []*types.Booking
+	if err := cursor.All(ctx, &bookings); err != nil {
+		return nil, err
+	}
+	return bookings, nil
 }
 
 func (s *MongoBookingStore) CreateBooking(ctx context.Context, booking *types.Booking) (*types.Booking, error) {
