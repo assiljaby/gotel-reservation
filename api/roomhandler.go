@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
@@ -15,6 +16,14 @@ type BookRoomParams struct {
 	FromDate  time.Time `json:"fromDate"`
 	TillDate  time.Time `json:"tillDate"`
 	NumPerson int       `json:"numPerson"`
+}
+
+func (p BookRoomParams) validate() error {
+	now := time.Now()
+	if now.After(p.FromDate) || now.After(p.TillDate) {
+		return fmt.Errorf("cannot book a room in the past")
+	}
+	return nil
 }
 
 type RoomHandler struct {
@@ -38,6 +47,10 @@ func (h *RoomHandler) HandleGetRooms(c *fiber.Ctx) error {
 func (h *RoomHandler) HandleBookRoom(c *fiber.Ctx) error {
 	var params BookRoomParams
 	if err := c.BodyParser(&params); err != nil {
+		return err
+	}
+
+	if err := params.validate(); err != nil {
 		return err
 	}
 	roomID, err := primitive.ObjectIDFromHex(c.Params("id"))
