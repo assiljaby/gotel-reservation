@@ -36,6 +36,10 @@ func (h *RoomHandler) HandleGetRooms(c *fiber.Ctx) error {
 }
 
 func (h *RoomHandler) HandleBookRoom(c *fiber.Ctx) error {
+	var params BookRoomParams
+	if err := c.BodyParser(&params); err != nil {
+		return err
+	}
 	roomID, err := primitive.ObjectIDFromHex(c.Params("id"))
 	if err != nil {
 		return err
@@ -50,10 +54,16 @@ func (h *RoomHandler) HandleBookRoom(c *fiber.Ctx) error {
 	}
 
 	booking := types.Booking{
-		UserID: user.ID,
-		RoomID: roomID,
+		UserID:    user.ID,
+		RoomID:    roomID,
+		FromDate:  params.FromDate,
+		TillDate:  params.TillDate,
+		NumPerson: params.NumPerson,
 	}
 
-	_ = booking
-	return nil
+	createdBooking, err := h.store.Booking.CreateBooking(c.Context(), &booking)
+	if err != nil {
+		return err
+	}
+	return c.JSON(createdBooking)
 }

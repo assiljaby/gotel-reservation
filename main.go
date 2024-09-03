@@ -51,13 +51,15 @@ func main() {
 
 	// Handler Initialization
 	var (
-		hotelStore = db.NewMongoHotelStore(client, DBNAME)
-		userStore  = db.NewMongoUserStore(client, DBNAME)
-		roomStore  = db.NewMongoRoomStore(client, hotelStore, DBNAME)
-		store      = &db.Store{
-			Hotel: hotelStore,
-			User:  userStore,
-			Room:  roomStore,
+		hotelStore   = db.NewMongoHotelStore(client, DBNAME)
+		userStore    = db.NewMongoUserStore(client, DBNAME)
+		roomStore    = db.NewMongoRoomStore(client, hotelStore, DBNAME)
+		bookingStore = db.NewMongoBookingStore(client, DBNAME)
+		store        = &db.Store{
+			Hotel:   hotelStore,
+			User:    userStore,
+			Room:    roomStore,
+			Booking: bookingStore,
 		}
 		userHandler  = api.NewUserHandler(userStore)
 		hotelHandler = api.NewHotelHandler(store)
