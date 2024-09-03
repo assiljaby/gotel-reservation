@@ -86,7 +86,8 @@ func main() {
 	apiv1.Get("hotel/:id/rooms", hotelHandler.HandleGetRooms)
 
 	// Booking Handlers
-	apiv1.Post("room/:id/book", RoomHandler.HandleBookRoom)
+	apiv1.Post("rooms/:id/book", RoomHandler.HandleBookRoom)
+	apiv1.Post("rooms", RoomHandler.HandleGetRooms)
 
 	app.Listen(*listenPort)
 }
