@@ -69,6 +69,7 @@ func main() {
 		app            = fiber.New(config)
 		auth           = app.Group("/api")
 		apiv1          = app.Group("/api/v1", middleware.JWTAuth(userStore))
+		admin          = apiv1.Group("/admin", middleware.AdminAuth)
 	)
 
 	// Auth Handlers
@@ -82,17 +83,19 @@ func main() {
 	apiv1.Delete("/users/:id", userHandler.HandleDeleteUser)
 
 	// Hotel Handlers
-	apiv1.Get("hotels", hotelHandler.HandleGetHotels)
-	apiv1.Get("hotel/:id", hotelHandler.HandleGetHotel)
-	apiv1.Get("hotel/:id/rooms", hotelHandler.HandleGetRooms)
+	apiv1.Get("/hotels", hotelHandler.HandleGetHotels)
+	apiv1.Get("/hotel/:id", hotelHandler.HandleGetHotel)
+	apiv1.Get("/hotel/:id/rooms", hotelHandler.HandleGetRooms)
 
 	// Room Handlers
-	apiv1.Post("rooms/:id/book", roomHandler.HandleBookRoom)
-	apiv1.Post("rooms", roomHandler.HandleGetRooms)
+	apiv1.Post("/rooms/:id/book", roomHandler.HandleBookRoom)
+	apiv1.Post("/rooms", roomHandler.HandleGetRooms)
 
 	// Booking Handlers
-	apiv1.Get("bookings", bookingHandler.HandleGetBookings)
-	apiv1.Get("bookings/:id", bookingHandler.HandleGetBooking)
+	apiv1.Get("/bookings/:id", bookingHandler.HandleGetBooking)
+
+	// Admin routes
+	admin.Get("/bookings", bookingHandler.HandleGetBookings)
 
 	app.Listen(*listenPort)
 }
