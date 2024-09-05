@@ -53,6 +53,7 @@ type UserWithoutID struct {
 	LastName     string `bson:"lastName" json:"lastName"`
 	Email        string `bson:"email" json:"email"`
 	PasswordHash string `bson:"passwordHash" json:"passwordHash"`
+	IsAdmin      bool   `bson:"isAdmin" json:"isAdmin"`
 }
 
 type User struct {

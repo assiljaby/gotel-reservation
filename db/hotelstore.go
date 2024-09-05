@@ -10,7 +10,7 @@ import (
 )
 
 type HotelStore interface {
-	CreateHotel(context.Context, types.HotelWithoutID) (*types.Hotel, error)
+	CreateHotel(context.Context, *types.HotelWithoutID) (*types.Hotel, error)
 	Update(context.Context, Map, Map) error
 	GetHotelByID(context.Context, string) (*types.Hotel, error)
 	GetHotels(context.Context, bson.M) ([]*types.Hotel, error)
@@ -40,7 +40,7 @@ func (s *MongoHotelStore) GetHotelByID(ctx context.Context, id string) (*types.H
 	return &hotel, nil
 }
 
-func (s *MongoHotelStore) CreateHotel(ctx context.Context, hotel types.HotelWithoutID) (*types.Hotel, error) {
+func (s *MongoHotelStore) CreateHotel(ctx context.Context, hotel *types.HotelWithoutID) (*types.Hotel, error) {
 	res, err := s.collection.InsertOne(ctx, hotel)
 	if err != nil {
 		return nil, err

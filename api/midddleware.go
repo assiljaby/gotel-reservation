@@ -1,4 +1,4 @@
-package middleware
+package api
 
 import (
 	"fmt"
@@ -7,9 +7,21 @@ import (
 	"time"
 
 	"github.com/assiljaby/gotel-reservation/db"
+	"github.com/assiljaby/gotel-reservation/types"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
 )
+
+func AdminAuth(c *fiber.Ctx) error {
+	user, ok := c.Context().UserValue("user").(*types.User)
+	if !ok {
+		return fmt.Errorf("unauthorized")
+	}
+	if !user.IsAdmin {
+		return fmt.Errorf("unauthorized")
+	}
+	return c.Next()
+}
 
 func JWTAuth(userStore db.UserStore) fiber.Handler {
 	return func(c *fiber.Ctx) error {

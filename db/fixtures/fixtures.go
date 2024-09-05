@@ -6,8 +6,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/fulltimegodev/hotel-reservation/db"
-	"github.com/fulltimegodev/hotel-reservation/types"
+	"github.com/assiljaby/gotel-reservation/db"
+	"github.com/assiljaby/gotel-reservation/types"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -18,7 +18,7 @@ func AddBooking(store *db.Store, uid, rid primitive.ObjectID, from, till time.Ti
 		FromDate: from,
 		TillDate: till,
 	}
-	insertedBooking, err := store.Booking.InsertBooking(context.Background(), booking)
+	insertedBooking, err := store.Booking.CreateBooking(context.Background(), booking)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -32,7 +32,7 @@ func AddRoom(store *db.Store, size string, ss bool, price float64, hid primitive
 		Price:   price,
 		HotelID: hid,
 	}
-	insertedRoom, err := store.Room.InsertRoom(context.Background(), room)
+	insertedRoom, err := store.Room.CreateRoom(context.Background(), room)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -44,13 +44,13 @@ func AddHotel(store *db.Store, name string, loc string, rating int, rooms []prim
 	if rooms == nil {
 		roomIDS = []primitive.ObjectID{}
 	}
-	hotel := types.Hotel{
+	hotel := types.HotelWithoutID{
 		Name:     name,
 		Location: loc,
 		Rooms:    roomIDS,
 		Rating:   rating,
 	}
-	insertedHotel, err := store.Hotel.InsertHotel(context.TODO(), &hotel)
+	insertedHotel, err := store.Hotel.CreateHotel(context.TODO(), &hotel)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -58,7 +58,7 @@ func AddHotel(store *db.Store, name string, loc string, rating int, rooms []prim
 }
 
 func AddUser(store *db.Store, fn, ln string, admin bool) *types.User {
-	user, err := types.NewUserFromParams(types.CreateUserParams{
+	user, err := types.NewUserFromParams(types.UserParams{
 		Email:     fmt.Sprintf("%s@%s.com", fn, ln),
 		FirstName: fn,
 		LastName:  ln,
@@ -68,7 +68,7 @@ func AddUser(store *db.Store, fn, ln string, admin bool) *types.User {
 		log.Fatal(err)
 	}
 	user.IsAdmin = admin
-	insertedUser, err := store.User.InsertUser(context.TODO(), user)
+	insertedUser, err := store.User.CreateUser(context.TODO(), user)
 	if err != nil {
 		log.Fatal(err)
 	}
