@@ -2,39 +2,56 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"os"
+	"time"
 
+	"github.com/assiljaby/gotel-reservation/api"
 	"github.com/assiljaby/gotel-reservation/db"
+	"github.com/assiljaby/gotel-reservation/db/fixtures"
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"golang.org/x/exp/rand"
 )
 
 func main() {
-	// Loading Env Vars
-	err := godotenv.Load()
+	if err := godotenv.Load(); err != nil {
+		log.Fatal(err)
+	}
+	var (
+		ctx           = context.Background()
+		mongoEndpoint = os.Getenv("MONGO_DB_URL")
+		DBNAME        = os.Getenv("MONGO_DB_NAME")
+	)
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(mongoEndpoint))
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		log.Fatal(err)
 	}
-
-	// Geting MongoDB URI from ENV
-	mongodbURI := os.Getenv("MONGODB_URI")
-	if mongodbURI == "" {
-		log.Fatal("Database URI was not set correctly.")
+	if err := client.Database(DBNAME).Drop(ctx); err != nil {
+		log.Fatal(err)
 	}
-	DBNAME := os.Getenv("MONGO_DB_NAME")
-	if mongodbURI == "" {
-		log.Fatal("Database URI was not set correctly.")
-	}
-
-	// Initializing DB connection
-	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(mongodbURI))
-	if err != nil {
-		log.Fatal("Failed to connect to database.")
-	}
-
 	hotelStore := db.NewMongoHotelStore(client, DBNAME)
+	store := &db.Store{
+		User:    db.NewMongoUserStore(client, DBNAME),
+		Booking: db.NewMongoBookingStore(client, DBNAME),
+		Room:    db.NewMongoRoomStore(client, hotelStore, DBNAME),
+		Hotel:   hotelStore,
+	}
 
-	_ = hotelStore
+	user := fixtures.AddUser(store, "james", "foo", false)
+	fmt.Println("james ->", api.CreateTokenFromUser(user))
+	admin := fixtures.AddUser(store, "admin", "admin", true)
+	fmt.Println("admin ->", api.CreateTokenFromUser(admin))
+	hotel := fixtures.AddHotel(store, "some hotel", "bermuda", 5, nil)
+	room := fixtures.AddRoom(store, "large", true, 88.44, hotel.ID)
+	booking := fixtures.AddBooking(store, user.ID, room.ID, time.Now(), time.Now().AddDate(0, 0, 5))
+	fmt.Println("booking ->", booking.ID)
+
+	for i := 0; i < 100; i++ {
+		name := fmt.Sprintf("random hotel name %d", i)
+		location := fmt.Sprintf("location %d", i)
+		fixtures.AddHotel(store, name, location, rand.Intn(5)+1, nil)
+	}
 }
