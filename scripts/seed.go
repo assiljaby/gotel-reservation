@@ -22,7 +22,7 @@ func main() {
 	}
 	var (
 		ctx           = context.Background()
-		mongoEndpoint = os.Getenv("MONGO_DB_URL")
+		mongoEndpoint = os.Getenv("MONGODB_URI")
 		DBNAME        = os.Getenv("MONGO_DB_NAME")
 	)
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(mongoEndpoint))
