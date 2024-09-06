@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"flag"
 	"log"
 	"os"
 
@@ -15,16 +14,10 @@ import (
 )
 
 var config = fiber.Config{
-	ErrorHandler: func(c *fiber.Ctx, err error) error {
-		return c.JSON(map[string]string{"error": err.Error()})
-	},
+	ErrorHandler: api.ErrorHandler,
 }
 
 func main() {
-	// Geetting and parsing flags
-	listenPort := flag.String("listenPort", ":3000", "The server is listening to this port")
-	flag.Parse()
-
 	// Loading Env Vars
 	err := godotenv.Load()
 	if err != nil {
@@ -97,5 +90,6 @@ func main() {
 	// Admin routes
 	admin.Get("/bookings", bookingHandler.HandleGetBookings)
 
-	app.Listen(*listenPort)
+	listenPort := os.Getenv("LISTEN_PORT")
+	app.Listen(listenPort)
 }
