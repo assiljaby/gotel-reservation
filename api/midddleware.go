@@ -3,6 +3,7 @@ package api
 import (
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"time"
 
@@ -15,10 +16,10 @@ import (
 func AdminAuth(c *fiber.Ctx) error {
 	user, ok := c.Context().UserValue("user").(*types.User)
 	if !ok {
-		return fmt.Errorf("unauthorized")
+		return ErrUnAuthorized()
 	}
 	if !user.IsAdmin {
-		return fmt.Errorf("unauthorized")
+		return ErrUnAuthorized()
 	}
 	return c.Next()
 }
@@ -27,24 +28,25 @@ func JWTAuth(userStore db.UserStore) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		token, ok := c.GetReqHeaders()["X-Api-Token"]
 		if !ok {
-			return fmt.Errorf("unauthorized")
+			fmt.Println("missing token")
+			return ErrUnAuthorized()
 		}
 
 		claims, err := validateToken(token[0])
 		if err != nil {
-			return fmt.Errorf("unauthorized")
+			return err
 		}
 
 		validUntillFloat := claims["validUntill"].(float64)
 		validUntill := int64(validUntillFloat)
 		if time.Now().Unix() > validUntill {
-			return fmt.Errorf("token expired")
+			return NewError(http.StatusUnauthorized, "token expired")
 		}
 
 		userID := claims["id"].(string)
 		user, err := userStore.GetUserById(c.Context(), userID)
 		if err != nil {
-			return fmt.Errorf("unauthorized")
+			return ErrUnAuthorized()
 		}
 		c.Context().SetUserValue("user", user)
 		return c.Next()
@@ -55,7 +57,7 @@ func validateToken(tokenString string) (jwt.MapClaims, error) {
 		// Don't forget to validate the alg is what you expect:
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			fmt.Println("Unexpected signing method:", token.Header["alg"])
-			return nil, fmt.Errorf("unauthorized")
+			return nil, ErrUnAuthorized()
 		}
 
 		secret := os.Getenv("JWT_SECRET")
@@ -63,17 +65,17 @@ func validateToken(tokenString string) (jwt.MapClaims, error) {
 	})
 	if err != nil {
 		log.Fatal(err)
-		return nil, fmt.Errorf("unauthorized")
+		return nil, ErrUnAuthorized()
 	}
 
 	if !token.Valid {
 		fmt.Println("invalid token")
-		return nil, fmt.Errorf("unauthorized")
+		return nil, ErrUnAuthorized()
 	}
 
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok {
-		return nil, fmt.Errorf("unauthorized")
+		return nil, ErrUnAuthorized()
 	}
 
 	return claims, nil
